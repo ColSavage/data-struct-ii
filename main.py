@@ -1,3 +1,5 @@
+import copy
+
 from HashTable import *
 from Truck import *
 from TimeSimulator import *
@@ -304,30 +306,45 @@ def loadTrucks(packageHashTable, distanceData):
     truckThree = bestRouteForThree[0]
     # truckFour = bestRouteForFour[0]
 
-    return truckOne, truckTwo, truckThree #, truckFour
+    return truckOne, truckTwo, truckThree
 
-def deliverPackages(truck, packageHashTable, distanceData, timeOfDay):
+
+# TODO: Continue to make deliver packages work, i am passing in three trucks to make keeping track of time easier. work on printing the time correctly.
+def deliverPackages(truckOne, truckTwo, truckThree, packageHashTable, distanceData, timeOfDay):
     startPoint = ("0", '4001 South 700 East', 'Salt Lake City', '84107', 'start', '0', '', 'HUB')
     startLocation = None
-    for package in truck.packages:
+
+    firstStatus = False
+    secondStatus = False
+    thirdStatus = False
+
+    firstUpdate = None
+    secondUpdate = None
+    thirdUpdate = None
+
+    for package in truckOne.packages:
         packageHashTable.insert(package[0], (
             package[0], package[1], package[2], package[3], package[4], package[5], package[6], package[7],
-            "Out for Delivery"))
+            "Out for Delivery - Truck One"))
 
-    for package in truck.packages:
+    for package in truckOne.packages:
         if startLocation is None:
-            # truck.setMilesDriven(float(getDistance(startPoint[1], package[1], distanceData)))
             startLocation = package[1]
-
             distanceDriven = float(getDistance(startPoint[1], startLocation, distanceData))
             timeTaken = float(distanceDriven) / 18
             timeOfDay.advance_time(timeTaken * 3600)
-            # This below updates the hashtable value
+
+            if datetime(2024, 4, 28, 8, 35) < timeOfDay.get_current_time() < datetime(2024, 4, 28, 9, 25) and firstStatus is False:
+                firstUpdate = copy.deepcopy(packageHashTable)
+                firstStatus = True
+                for package in truckTwo.packages:
+                    packageHashTable.insert(package[0], (
+                        package[0], package[1], package[2], package[3], package[4], package[5], package[6], package[7],
+                        "Out for Delivery - Truck Two"))
             packageHashTable.insert(package[0], (
                 package[0], package[1], package[2], package[3], package[4], package[5], package[6], package[7],
                 "Delivered - " + str(timeOfDay.get_current_time())))
-            truck.setMilesDriven(distanceDriven)
-
+            truckOne.setMilesDriven(distanceDriven)
         else:
             # Calculate time and distance between the start and end points, update hash table with delivery times and update truck miles driven
             distanceDriven = float(getDistance(startLocation, package[1], distanceData))
@@ -337,58 +354,238 @@ def deliverPackages(truck, packageHashTable, distanceData, timeOfDay):
             packageHashTable.insert(package[0], (
                 package[0], package[1], package[2], package[3], package[4], package[5], package[6], package[7],
                 "Delivered - " + str(timeOfDay.get_current_time())))
-            truck.setMilesDriven(distanceDriven)
+            truckOne.setMilesDriven(distanceDriven)
+
+            if datetime(2024, 4, 28, 8, 35) < timeOfDay.get_current_time() < datetime(2024, 4, 28, 9,
+                                                                                      25) and firstStatus is False:
+                firstUpdate = copy.deepcopy(packageHashTable)
+                firstStatus = True
+                for pack in truckTwo.packages:
+                    packageHashTable.insert(pack[0], (
+                        pack[0], pack[1], pack[2], pack[3], pack[4], pack[5], pack[6], pack[7],
+                        "Out for Delivery - Truck Two"))
+
+            if datetime(2024, 4, 28, 9, 35) < timeOfDay.get_current_time() < datetime(2024, 4, 28, 10,
+                                                                                      35) and secondStatus is False:
+                secondUpdate = copy.deepcopy(packageHashTable)
+                secondStatus = True
+            if datetime(2024, 4, 28, 12, 3) < timeOfDay.get_current_time() < datetime(2024, 4, 28, 1,
+                                                                                      12) and thirdStatus is False:
+                thirdUpdate = copy.deepcopy(packageHashTable)
+                thirdStatus = True
+
             startLocation = package[1]
     # Calculate time and distance back to hub from last package delivered.
     distanceToHub = float(getDistance(startPoint[1], startLocation, distanceData))
-    truck.setMilesDriven(distanceToHub)
+    truckOne.setMilesDriven(distanceToHub)
     timeTaken = float(distanceToHub) / 18
     timeOfDay.advance_time(timeTaken * 3600)
-    truck.setFinishTime(timeOfDay)
-    print("Delivering")
-    return truck
+    truckOne.setFinishTime(timeOfDay)
+
+    startPoint = ("0", '4001 South 700 East', 'Salt Lake City', '84107', 'start', '0', '', 'HUB')
+    startLocation = None
+    nineFive = TimeSimulator(datetime(2024, 4, 28, 9, 5, 0))
+
+    for package in truckTwo.packages:
+        packageHashTable.insert(package[0], (
+            package[0], package[1], package[2], package[3], package[4], package[5], package[6], package[7],
+            "Out for Delivery - Truck Two"))
+
+    for package in truckTwo.packages:
+        if startLocation is None:
+            startLocation = package[1]
+            distanceDriven = float(getDistance(startPoint[1], startLocation, distanceData))
+            timeTaken = float(distanceDriven) / 18
+            nineFive.advance_time(timeTaken * 3600)
+
+            if datetime(2024, 4, 28, 8, 35) < nineFive.get_current_time() < datetime(2024, 4, 28, 9,
+                                                                                     25) and firstStatus is False:
+                firstUpdate = copy.deepcopy(packageHashTable)
+                firstStatus = True
+
+            packageHashTable.insert(package[0], (
+                package[0], package[1], package[2], package[3], package[4], package[5], package[6], package[7],
+                "Delivered - " + str(nineFive.get_current_time())))
+            truckTwo.setMilesDriven(distanceDriven)
+        else:
+            # Calculate time and distance between the start and end points, update hash table with delivery times and update truck miles driven
+            distanceDriven = float(getDistance(startLocation, package[1], distanceData))
+            timeTaken = float(distanceDriven) / 18
+            nineFive.advance_time(timeTaken * 3600)
+            # This below updates the hashtable value
+            packageHashTable.insert(package[0], (
+                package[0], package[1], package[2], package[3], package[4], package[5], package[6], package[7],
+                "Delivered - " + str(nineFive.get_current_time())))
+            truckTwo.setMilesDriven(distanceDriven)
+
+            if datetime(2024, 4, 28, 8, 35) < nineFive.get_current_time() < datetime(2024, 4, 28, 9,
+                                                                                     25) and firstStatus is False:
+                firstUpdate = copy.deepcopy(packageHashTable)
+                firstStatus = True
+            if datetime(2024, 4, 28, 9, 35) < nineFive.get_current_time() < datetime(2024, 4, 28, 10,
+                                                                                     35) and secondStatus is False:
+                secondUpdate = copy.deepcopy(packageHashTable)
+                secondStatus = True
+            if datetime(2024, 4, 28, 12, 3) < nineFive.get_current_time() < datetime(2024, 4, 28, 1,
+                                                                                     12) and thirdStatus is False:
+                thirdUpdate = copy.deepcopy(packageHashTable)
+                thirdStatus = True
+
+            startLocation = package[1]
+    # Calculate time and distance back to hub from last package delivered.
+    distanceToHub = float(getDistance(startPoint[1], startLocation, distanceData))
+    truckTwo.setMilesDriven(distanceToHub)
+    timeTaken = float(distanceToHub) / 18
+    nineFive.advance_time(timeTaken * 3600)
+    truckTwo.setFinishTime(nineFive)
+
+    startPoint = ("0", '4001 South 700 East', 'Salt Lake City', '84107', 'start', '0', '', 'HUB')
+    startLocation = None
+    nextLoadTime = None
+    finalLoadtime = None
+
+    # if truckOne.finishTime.get_current_time() < truckTwo.finishTime.get_current_time():
+    #     nextLoadTime = TimeSimulator(truckOne.finishTime.get_current_time())
+    #     # finalLoadtime = truckTwo.finishTime.get_current_time()
+    # else:
+    nextLoadTime = TimeSimulator(truckTwo.finishTime.get_current_time())
+        # finalLoadtime = truckOne.finishTime.get_current_time()
+
+    for package in truckThree.packages:
+        packageHashTable.insert(package[0], (
+            package[0], package[1], package[2], package[3], package[4], package[5], package[6], package[7],
+            "Out for Delivery - Truck Two Load Two"))
+
+    for package in truckThree.packages:
+        if startLocation is None:
+            startLocation = package[1]
+            distanceDriven = float(getDistance(startPoint[1], startLocation, distanceData))
+            timeTaken = float(distanceDriven) / 18
+            nextLoadTime.advance_time(timeTaken * 3600)
+
+            if datetime(2024, 4, 28, 9, 5) < nextLoadTime.get_current_time() < datetime(2024, 4, 28, 9, 15) and firstStatus is False:
+                firstUpdate = copy.deepcopy(packageHashTable)
+                firstStatus = True
+            packageHashTable.insert(package[0], (
+                package[0], package[1], package[2], package[3], package[4], package[5], package[6], package[7],
+                "Delivered - " + str(nextLoadTime.get_current_time())))
+            truckTwo.setMilesDriven(distanceDriven)
+        else:
+            # Calculate time and distance between the start and end points, update hash table with delivery times and update truck miles driven
+            distanceDriven = float(getDistance(startLocation, package[1], distanceData))
+            timeTaken = float(distanceDriven) / 18
+            nextLoadTime.advance_time(timeTaken * 3600)
+            # This below updates the hashtable value
+            packageHashTable.insert(package[0], (
+                package[0], package[1], package[2], package[3], package[4], package[5], package[6], package[7],
+                "Delivered - " + str(nextLoadTime.get_current_time())))
+            truckTwo.setMilesDriven(distanceDriven)
+
+            if datetime(2024, 4, 28, 8, 35) < nextLoadTime.get_current_time() < datetime(2024, 4, 28, 9,
+                                                                                         25) and firstStatus is False:
+                firstUpdate = copy.deepcopy(packageHashTable)
+                firstStatus = True
+            if datetime(2024, 4, 28, 9, 35) < nextLoadTime.get_current_time() < datetime(2024, 4, 28, 10,
+                                                                                         35) and secondStatus is False:
+                secondUpdate = copy.deepcopy(packageHashTable)
+                secondStatus = True
+            if datetime(2024, 4, 28, 12, 3) < nextLoadTime.get_current_time() < datetime(2024, 4, 28, 1,
+                                                                                         12) and thirdStatus is False:
+                thirdUpdate = copy.deepcopy(packageHashTable)
+                thirdStatus = True
+
+            startLocation = package[1]
+    # Calculate time and distance back to hub from last package delivered.
+    distanceToHub = float(getDistance(startPoint[1], startLocation, distanceData))
+    truckTwo.setMilesDriven(distanceToHub)
+    timeTaken = float(distanceToHub) / 18
+    nextLoadTime.advance_time(timeTaken * 3600)
+    truckTwo.setFinishTime(nextLoadTime)
+
+    return firstUpdate, secondUpdate, thirdUpdate, truckOne, truckTwo, truckThree
 
 
 def startDay(packageHashTable, distanceData):
     truckOne = Truck()
+    truckOne.setTruckId(1)
     truckTwo = Truck()
+    truckTwo.setTruckId(2)
     truckThree = Truck()
-    truckFour = Truck()
+    truckThree.setTruckId(3)
+    # truckFour = Truck()
+
+    print("========================== Packages to Deliver ==========================")
+    for i in range(1, 41):
+        print(packageHashTable.search(str(i)))
+    print('\n')
+    print('Begin loading ...')
+
+    timeOfDay = TimeSimulator(datetime(2024, 4, 28, 8, 0))
 
     # Load Packages onto truck
     truckOneLoad, truckTwoLoad, truckThreeLoad = loadTrucks(packageHashTable, distanceData)
+
     truckOne.addPackagesAndRoute(truckOneLoad)
     truckTwo.addPackagesAndRoute(truckTwoLoad)
     truckThree.addPackagesAndRoute(truckThreeLoad)
-    # truckFour.addPackagesAndRoute(truckFourLoad)
 
-    timeOfDay = TimeSimulator(datetime(2024, 4, 28, 8, 0))
-    doneTruckOne = deliverPackages(truckOne, packageHashTable, distanceData, timeOfDay)
+    firstUpdate, secondUpdate, thirdUpdate, doneOne, doneTwo, doneThree = deliverPackages(truckOne, truckTwo,
+                                                                                          truckThree, packageHashTable,
+                                                                                          distanceData, timeOfDay)
 
-    nineFive = TimeSimulator(datetime(2024, 4, 28, 9, 5, 0))
-    doneTruckTwo = deliverPackages(truckTwo, packageHashTable, distanceData, nineFive)
+    printStatus(firstUpdate, '8:35 - 9:25 AM')
+    printStatus(secondUpdate, '9:35 - 10:25 AM')
+    printStatus(thirdUpdate, '12:05 - 1:12 PM')
 
-    nextLoadTime = None
-    finalLoadtime = None
-    if doneTruckOne.finishTime.get_current_time() < doneTruckTwo.finishTime.get_current_time():
-        nextLoadTime = doneTruckOne.finishTime.get_current_time()
-        finalLoadtime = doneTruckTwo.finishTime.get_current_time()
+    return doneOne, doneTwo, doneThree
+
+
+def printStatus(packageHashTable, timeSlot):
+    if packageHashTable is None:
+        print('========================== ' + timeSlot + ' ==========================')
+        print("All delivered!")
     else:
-        nextLoadTime = doneTruckTwo.finishTime.get_current_time()
-        finalLoadtime = doneTruckOne.finishTime.get_current_time()
+        print('========================== ' + timeSlot + ' ==========================')
 
-    doneTruckThree = deliverPackages(truckThree, packageHashTable, distanceData, TimeSimulator(nextLoadTime))
-
-    # doneTruckFour = deliverPackages(truckFour, packageHashTable, distanceData, TimeSimulator(finalLoadtime))
-    print("All delivered")
+        for i in range(1, 41):
+            print(packageHashTable.search(str(i)))
+        print('\n')
 
 
 if __name__ == '__main__':
     distanceData = read_distance_data("destinations.csv")
     packageHashTable = read_package_data("packageCSV.csv")
 
-    startDay(packageHashTable, distanceData)
+    print("==============================================================")
+    print("========================== Welcome! ==========================")
+    print("==============================================================")
+    print('\n')
+    print("Would you like to start the day? \n Y or N")
 
-    print('hello')
+    answer = str(input())
+
+    doneOne = None
+    doneTwo = None
+    doneThree = None
+
+    if answer.lower() == 'y':
+        doneOne, doneTwo, doneThree = startDay(packageHashTable, distanceData)
+    else:
+        print("Bye, Have a great day!")
+        exit()
+
+    print("========================== All Delivered ==========================")
+    printStatus(packageHashTable, "Final Update")
+
+    print('======================== Truck Statistics =========================')
+    print('========================== Truck One ==========================')
+    print('Miles driven: ' + str(doneOne.getMilesDriven()) + '\n')
+    print('========================== Truck Two ==========================')
+    print('Miles driven: ' + str(doneTwo.getMilesDriven()) + '\n')
+    print('========================== Truck Three ==========================')
+    print('Miles driven: ' + str(doneThree.getMilesDriven()) + '\n')
+
+    # startDay(packageHashTable, distanceData)
+
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/

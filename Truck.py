@@ -5,7 +5,7 @@ class Truck:
 
     def __init__(self):
         self.loadTime = None
-        self.id = uuid.UUID
+        self.id = None
         self.driverId = None
         self.packages = []
         self.route = []
@@ -45,3 +45,9 @@ class Truck:
 
     def getFinishTime(self):
         return self.finishTime
+
+    def setTruckId(self, newId):
+        self.id = newId
+
+    def getTruckId(self):
+        return self.id
