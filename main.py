@@ -158,6 +158,7 @@ def determineBestRoute(packageLoad, packageHashTable, distanceData):
 
     return bestEarlyRoute, totalDistance
 
+
 # Time O(n^2)
 # Space O(n)
 # This function does the bulk of loading each truck. From this function, the nearest neighbor algorithm is called, it will first look to see which packages need to be on truck two, then the ones that are delayed and then the ones that need to be delivered together.
@@ -307,10 +308,12 @@ def newLoadTrucks(packageHashTable, distanceData):
                     break
 
             if totalSecond < totalFirst and totalSecond < total:
-                if len(loadFourth) < 16 and package not in loadThird and package not in loadFourth and package not in loadFirst and package[0] not in ONLY_TRUCK_TWO:
+                if len(loadFourth) < 16 and package not in loadThird and package not in loadFourth and package not in loadFirst and \
+                        package[0] not in ONLY_TRUCK_TWO:
                     loadFourth.append(package)
             elif total < totalFirst and total < totalSecond:
-                if len(loadFirst) < 16 and package not in loadThird and package not in loadFourth and package not in loadFirst and package[0] not in ONLY_TRUCK_TWO:
+                if len(loadFirst) < 16 and package not in loadThird and package not in loadFourth and package not in loadFirst and \
+                        package[0] not in ONLY_TRUCK_TWO:
                     loadFirst.append(package)
             elif totalFirst > total > totalSecond:
                 if len(loadFourth) < 16 and package not in loadThird and package not in loadFourth and package not in loadFirst and \
@@ -496,7 +499,7 @@ def deliverPackages(truckOne, truckTwo, truckThree, truckFour, packageHashTable,
             timeTaken = float(distanceDriven) / 18
             nineFive.advance_time(timeTaken * 3600)
             if nineFive.get_current_time() > datetime(2024, 4, 28, 10,
-                                                      20) and wasCorrected is False:  # 410 S. State St., Salt Lake City, UT 84111
+                                                      20) and wasCorrected is False:
                 for i in range(1, 41):
                     nine = packageHashTable.search(str(i))
                     if nine[0] == '9':
@@ -522,7 +525,7 @@ def deliverPackages(truckOne, truckTwo, truckThree, truckFour, packageHashTable,
                     nine = packageHashTable.search(str(i))
                     if nine[0] == '9':
                         packageHashTable.insert(nine[0], (
-                            nine[0], "410 S State St", nine[2], '84111', nine[4], nine[5], nine[6], nine[7], nine[8]))
+                        nine[0], "410 S State St", nine[2], '84111', nine[4], nine[5], nine[6], nine[7], nine[8]))
                         wasCorrected = True
             # Calculate time and distance between the start and end points, update hash table with delivery times and update truck miles driven
             distanceDriven = float(getDistance(startLocation, package[1], distanceData))
@@ -567,6 +570,7 @@ def deliverPackages(truckOne, truckTwo, truckThree, truckFour, packageHashTable,
             distanceDriven = float(getDistance(startPoint[1], startLocation, distanceData))
             timeTaken = float(distanceDriven) / 18
             nextLoadTime.advance_time(timeTaken * 3600)
+
             if datetime(2024, 4, 28, 9, 5) < nextLoadTime.get_current_time() < datetime(2024, 4, 28, 9,
                                                                                         15) and firstStatus is False:
                 firstUpdate = copy.deepcopy(packageHashTable)
@@ -606,6 +610,12 @@ def deliverPackages(truckOne, truckTwo, truckThree, truckFour, packageHashTable,
 
     nextLoadTime = TimeSimulator(truckOne.finishTime.get_current_time())
     wasCorrected = False
+    if nextLoadTime.get_current_time() < datetime(2024, 4, 28, 10, 20) and wasCorrected is False:
+        for i in range(1, 41):
+            nine = packageHashTable.search(str(i))
+            if nine[0] == '9':
+                packageHashTable.insert(nine[0], (
+                    nine[0], "300 State St", nine[2], '84103', nine[4], nine[5], nine[6], nine[7], nine[8]))
     # Deliver packages in last load
     for package in truckFour.packages:
         pack = packageHashTable.search(package[0])
@@ -620,6 +630,13 @@ def deliverPackages(truckOne, truckTwo, truckThree, truckFour, packageHashTable,
             distanceDriven = float(getDistance(startPoint[1], startLocation, distanceData))
             timeTaken = float(distanceDriven) / 18
             nextLoadTime.advance_time(timeTaken * 3600)
+            if nextLoadTime.get_current_time() > datetime(2024, 4, 28, 10, 20) and wasCorrected is False:
+                for i in range(1, 41):
+                    nine = packageHashTable.search(str(i))
+                    if nine[0] == '9':
+                        packageHashTable.insert(nine[0], (
+                            nine[0], "410 S State St", nine[2], '84111', nine[4], nine[5], nine[6], nine[7], nine[8]))
+                        wasCorrected = True
             if datetime(2024, 4, 28, 9, 5) < nextLoadTime.get_current_time() < datetime(2024, 4, 28, 9,
                                                                                         15) and firstStatus is False:
                 firstUpdate = copy.deepcopy(packageHashTable)
@@ -688,11 +705,12 @@ def startDay(packageHashTable, distanceData):
     truckThree.addPackagesAndRoute(truckThreeLoad)
     truckFour.addPackagesAndRoute(truckFourLoad)
 
-    doneOne, doneTwo, doneThree, doneFour, arrayTruckOne, arrayTruckTwo, arrayTruckThree, arrayTruckFour = deliverPackages(truckOne, truckTwo,
-                                                                                                 truckThree, truckFour,
-                                                                                                 packageHashTable,
-                                                                                                 distanceData,
-                                                                                                 timeOfDay)
+    doneOne, doneTwo, doneThree, doneFour, arrayTruckOne, arrayTruckTwo, arrayTruckThree, arrayTruckFour = deliverPackages(
+        truckOne, truckTwo,
+        truckThree, truckFour,
+        packageHashTable,
+        distanceData,
+        timeOfDay)
     done = False
 
     while done is False:
@@ -781,18 +799,27 @@ def startDay(packageHashTable, distanceData):
                     pack[0], pack[1], pack[2], pack[3], pack[4], pack[5], pack[6], pack[7],
                     'HUB'))
             htCopyCopy = copy.deepcopy(hashTableCopy)
-
+            updated = False
             # Now update the copy with updated statuses
             for load in startingTable:
                 for item in load[2].values:
                     for element in hashTableCopy.values:
                         # for item in load[2].values:
                         if element[0] == item[0]:
-                            if 'Delivered' not in element[8] and 'Delivered' in item[8]:
+                            if 'HUB' in item[8] and 'Delivered' not in element[8] and 'Out' not in element[8]:
+                                pack = item
+                                hashTableCopy.insert(pack[0], (
+                                    pack[0], pack[1], pack[2], pack[3], pack[4], pack[5], pack[6], pack[7], item[8]))
+                            elif element[0] == '9' and 'HUB' not in item[8] and updated is False:
+                                pack = item
+                                hashTableCopy.insert(pack[0], (
+                                    pack[0], pack[1], pack[2], pack[3], pack[4], pack[5], pack[6], pack[7], item[8]))
+                                updated = True
+                            elif 'Delivered' not in element[8] and 'Delivered' in item[8]:
                                 pack = packageHashTable.search(element[0])
                                 hashTableCopy.insert(pack[0], (
                                     pack[0], pack[1], pack[2], pack[3], pack[4], pack[5], pack[6], pack[7], item[8]))
-                            if ('Out' not in element[8] and 'Delivered' not in element[8]) and 'Out' in item[8]:
+                            elif ('Out' not in element[8] and 'Delivered' not in element[8]) and 'Out' in item[8]:
                                 pack = packageHashTable.search(element[0])
                                 hashTableCopy.insert(pack[0], (
                                     pack[0], pack[1], pack[2], pack[3], pack[4], pack[5], pack[6], pack[7], item[8]))
@@ -857,7 +884,6 @@ def startDay(packageHashTable, distanceData):
             break
 
     return doneOne, doneTwo, doneThree, doneFour
-
 
 
 if __name__ == '__main__':
